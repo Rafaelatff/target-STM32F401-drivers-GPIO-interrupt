@@ -95,4 +95,19 @@ else{ // >= 4
 } 
 ```
 
-PAREI em 112
+The information about the position of the IRQ is found in the 'Table 38: Vector table for STM32F401xB/CSTM32F401xD/E' of user manual (RM0368). Here we are creating some makros to help with the code. Later, it can be completed the makros for all on the table.
+
+![image](https://user-images.githubusercontent.com/58916022/208267413-03ed1832-e0cb-4f10-9055-eabc06528235.png)
+
+Copy in the MCU header file:
+
+```
+#define IRQ_NO_EXTI0 6
+#define IRQ_NO_EXTI1 7
+#define IRQ_NO_EXTI2 8
+#define IRQ_NO_EXTI3 9
+#define IRQ_NO_EXTI4 10
+#define IRQ_NO_EXTI9_5 23
+#define IRQ_NO_EXTI15_10 40 
+```
+
