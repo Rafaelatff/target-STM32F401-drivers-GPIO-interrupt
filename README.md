@@ -342,3 +342,11 @@ After IRQ configurations (ISER and ICER setted!)?! but it works...
 
 ![image](https://user-images.githubusercontent.com/58916022/208750112-4cd24b25-a6ae-44c3-b6ee-20bced95a013.png)
 
+during debug -> I/O Registers [eclipse] / SFRs [STM32CubeIDE]
+1 - check for peripheral clock (RCC, AxPB)
+2 - check NVIC registers (ISERx) // ISER1 since it must be "bit 40" (ISER0 0 to 31)
+3 - check priority register (IPRx) // 40/4 = 10 -> IPR10
+
+**NOTE: I/O Structure: FT (Five-volt tolerant), TT (Three-Volt Tolerant), TTa (Three-Volt Tolerant ADC conn)**
+
+
