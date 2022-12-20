@@ -268,10 +268,33 @@ void GPIO_IRQInterruptConfig(uint8_t IRQNumber, uint8_t EnOrDi){
 	}
 }
 
+void GPIO_IRQPriorityConfig(uint8_t IRQNumber, uint8_t IRQPriority){
 
+}
 ```
 
 For priority, the Interrupt Priority Registers (NVIC_IPR0-NVIC_IPR59) are divided by sections of 8 bits (IRQx_PRI), being 4 IRQ for register. 
 
+![image](https://user-images.githubusercontent.com/58916022/208701122-dd1b9b66-2f47-4e88-a7c2-65b836a005eb.png)
 
+```
+void GPIO_IRQPriorityConfig(uint8_t IRQNumber, uint8_t IRQPriority){
+	//1. first lets find out the IPR register
+	uint8_t iprx = IRQNumber /4;
+	uint8_t iprx_section = IRQNumber %4;
 
+	//*(NVIC_PR_BASE_ADDR + (iprx*4) |= (IRQPriority << (8 * iprx_section));
+		//lower 4 bits are not implemented, so we need to shift 8 bits to the right
+
+	uint8_t shift_amout = (8 * iprx_section) + (8 - NO_PR_BITS_IMPLEMENTED);
+	*(NVIC_PR_BASE_ADDR + (iprx*4)) |= (IRQPriority << shift_amout);
+}
+```
+Lets also add in  Processor Specific Details:
+
+```
+/*
+ *   ARM Cortex M4 Processor number of Priority bits implemented in Priority register 
+ */
+#define NO_PR_BITS_IMPLEMENTED 4
+```
