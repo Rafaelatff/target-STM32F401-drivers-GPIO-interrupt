@@ -16,6 +16,31 @@ GPIO pin interrupt configuration
 
 adc em xx.h
 
+Since we are using SYSCFG and EXTI, we are going to add the base addresses for the APB2 peripherals (and AHB2 to be completed).
+```
+/*
+    Base addresses of peripherals which are hanging on APB2 bus
+*/
+#define TIM1_BASEADDR 		(APB2PERIPH_BASE + 0x0000)
+#define USART1_BASEADDR 	(APB2PERIPH_BASE + 0x1000)
+#define USART6_BASEADDR 	(APB2PERIPH_BASE + 0x1400)
+#define ADC1_BASEADDR 		(APB2PERIPH_BASE + 0x2000)
+#define SDIO_BASEADDR 		(APB2PERIPH_BASE + 0x2C00)
+#define SPI1_BASEADDR 		(APB2PERIPH_BASE + 0x3000)
+#define SPI4_BASEADDR 		(APB2PERIPH_BASE + 0x3400)
+#define SYSCFG_BASEADDR 	(APB2PERIPH_BASE + 0x3800)
+#define EXTI_BASEADDR 		(APB2PERIPH_BASE + 0x3C00)
+#define TIM9_BASEADDR 		(APB2PERIPH_BASE + 0x4000)
+#define TIM10_BASEADDR 		(APB2PERIPH_BASE + 0x4400)
+#define TIM11_BASEADDR 		(APB2PERIPH_BASE + 0x4800)
+
+/*
+    Base addresses of peripherals which are hanging on AHB2 bus
+*/
+#define USB_OTG_FS_BASEADDR (AHB2PERIPH_BASE + 0x0000)
+```
+
+
 ```
 /*
     Peripheral definitions (Peripheral base addresses typecasted to xxx_RegDef_t)
@@ -23,11 +48,11 @@ adc em xx.h
 #define EXTI	((RCC_RegDef_t*)EXTI_BASEADDR)
 #define SYSCFG	((SYSCFG_RegDef_t*)SYSCFG_BASEADDR) //check if it is done
 
-#define GPIO_BASEADDR_TO_CODE(x) 	(x==GPIOA) ? 0:\ //if its A, else B (C conditional operator)
-					(x==GPIOB) ? 1:
-					(x==GPIOC) ? 2:
-					(x==GPIOD) ? 3:
-					(x==GPIOE) ? 4:
+#define GPIO_BASEADDR_TO_CODE(x)       ((x==GPIOA) ? 0:\ //if its A, else B (C conditional operator)
+					(x==GPIOB) ? 1:\
+					(x==GPIOC) ? 2:\
+					(x==GPIOD) ? 3:\
+					(x==GPIOE) ? 4:\
 					(x==GPIOH) ? 5:0)
 			
 /*
@@ -43,17 +68,17 @@ typedef struct{
 }EXTI_RegDef_t;
 
 typedef struct{
-	volative uint32_t MEMRMP; // Address offset: 0x00
-	volative uint32_t PMC; // Address offset: 0x04
-	volative uint32_t EXTICR[4]; // Address offset: 0x08~0x14
+	volatile uint32_t MEMRMP; // Address offset: 0x00
+	volatile uint32_t PMC; // Address offset: 0x04
+	volatile uint32_t EXTICR[4]; // Address offset: 0x08~0x14
 	//SYSCFG_EXTICR decides from which port the EXT will be used
 	//by defaut it is considered port A
 	//SYSCFG_EXTICR4 -> EXT13[3:0] -> used to configur PC13 -> 0b0010 PC[x] pin
 	//SYSCFG_EXTICR4 = EXTICR[3]
 	uint32_t RESERVED1[2]; // Address offset: 0x08~0x1C
-	volative uint32_t CMPCR; // Address offset: 0x20
+	volatile uint32_t CMPCR; // Address offset: 0x20
 	uint32_t RESERVED2[2]; // Address offset: 0x28
-	volative uint32_t CFGR; // Address offset: 0x2C
+	volatile uint32_t CFGR; // Address offset: 0x2C
 }SYSCFG_RegDef_t;
 
 void GPIO_IRQConfig()
@@ -109,5 +134,73 @@ Copy in the MCU header file:
 #define IRQ_NO_EXTI4 10
 #define IRQ_NO_EXTI9_5 23
 #define IRQ_NO_EXTI15_10 40 
+```
+
+Or, the complete macros:
+
+```
+// Generic IRQ macros 		Table 38. Vector table for STM32F401xB/CSTM32F401xD/E
+#define IRQ_NO_WWDG 				0
+#define IRQ_NO_EXTI16 				1
+#define IRQ_NO_PVD 					1
+#define IRQ_NO_EXTI21 				2
+#define IRQ_NO_TAMP_STAMP			2
+#define IRQ_NO_EXTI22 				3
+#define IRQ_NO_RTC_WKUP				3
+#define IRQ_NO_FLASH 				4
+#define IRQ_NO_RCC	 				5
+#define IRQ_NO_EXTI0 				6
+#define IRQ_NO_EXTI1 				7
+#define IRQ_NO_EXTI2 				8
+#define IRQ_NO_EXTI3 				9
+#define IRQ_NO_EXTI4 				10
+#define IRQ_NO_DMA1_STREAM0			11
+#define IRQ_NO_DMA1_STREAM1			12
+#define IRQ_NO_DMA1_STREAM2			13
+#define IRQ_NO_DMA1_STREAM3			14
+#define IRQ_NO_DMA1_STREAM4			15
+#define IRQ_NO_DMA1_STREAM5			16
+#define IRQ_NO_DMA1_STREAM6			17
+#define IRQ_NO_ADC					18
+#define IRQ_NO_EXTI9_5 				23
+#define IRQ_NO_TIM1_BRK_TIM9		24
+#define IRQ_NO_TIM1_UP_TIM10		25
+#define IRQ_NO_TIM1_TRG_COM_TIM11	26
+#define IRQ_NO_TIM1_CC	 			27
+#define IRQ_NO_TIM2	 				28
+#define IRQ_NO_TIM3 				29
+#define IRQ_NO_TIM4 				30
+#define IRQ_NO_I2C1_EV 				31
+#define IRQ_NO_I2C1_ER 				32
+#define IRQ_NO_I2C2_EV 				33
+#define IRQ_NO_I2C2_ER 				34
+#define IRQ_NO_SPI1 				35
+#define IRQ_NO_SPI2 				36
+#define IRQ_NO_USART1				37
+#define IRQ_NO_USART2	 			38
+#define IRQ_NO_EXTI15_10 			40
+#define IRQ_NO_EXTI17	 			41
+#define IRQ_NO_RTC_ALARM 			41
+#define IRQ_NO_EXTI18	 			42
+#define IRQ_NO_OTG_FS_WKUP 			42
+#define IRQ_NO_DMA1_STREAM7			47
+#define IRQ_NO_SDIO		 			49
+#define IRQ_NO_TIM5		 			50
+#define IRQ_NO_SPI3		 			51
+#define IRQ_NO_TIM5		 			50
+#define IRQ_NO_DMA2_STREAM0			56
+#define IRQ_NO_DMA2_STREAM1			57
+#define IRQ_NO_DMA2_STREAM2			58
+#define IRQ_NO_DMA2_STREAM3			59
+#define IRQ_NO_DMA2_STREAM4			60
+#define IRQ_NO_OTG_FS		 		67
+#define IRQ_NO_DMA2_STREAM5			68
+#define IRQ_NO_DMA2_STREAM6			69
+#define IRQ_NO_DMA2_STREAM7			70
+#define IRQ_NO_USART6	 			71
+#define IRQ_NO_I2C3_EV	 			72
+#define IRQ_NO_I2C3_ER		 		73
+#define IRQ_NO_FPU		 			81
+#define IRQ_NO_SPI4		 			84
 ```
 
