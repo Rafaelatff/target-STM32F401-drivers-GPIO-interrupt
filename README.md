@@ -314,6 +314,9 @@ void EXTI0_IRQHandler(void){
 }
 ```
 
+In our case, using B1 from NUCLEO board (GPIOC13)
+![image](https://user-images.githubusercontent.com/58916022/208752888-f048019f-c9b0-4030-9e1a-6d36dacd6f87.png)
+
 Note: G_pfnVectors is the vector table implemented on 'startup_stm32.s' file (assembly). 
 
 Lets implement the GPIO_IRQHandling.
@@ -327,3 +330,15 @@ void GPIO_IRQHandling(uint8_t GPIO_PinNumber){
 	}
 }
 ```
+## Final main code
+
+![image](https://user-images.githubusercontent.com/58916022/208753154-1bcaca0a-77d5-4493-847b-7085c9bf4283.png)
+
+## Debugind code
+
+![image](https://user-images.githubusercontent.com/58916022/208749653-5e2e12d1-5212-4f2f-8980-ff4eaa9452d1.png)
+
+After IRQ configurations (ISER and ICER setted!)?! but it works...
+
+![image](https://user-images.githubusercontent.com/58916022/208750112-4cd24b25-a6ae-44c3-b6ee-20bced95a013.png)
+
