@@ -298,3 +298,32 @@ Lets also add in  Processor Specific Details:
  */
 #define NO_PR_BITS_IMPLEMENTED 4
 ```
+
+Note, in  'Table 38: Vector table for STM32F401xB/CSTM32F401xD/E', we have as fixed vector address the value in the last column, while the vector address is the number of the position.
+
+ISR - user defined
+(weak ISRs - previous implemented in startup_stm32.s)
+
+Just seachr for the ISR that you need (eg.: EXTI0_IRQHandler) and copy to the main.c.
+
+```
+void EXTI0_IRQHandler(void){
+	// Handle the interrupt
+	//now the drivers enters:
+	GPIO_IRQHandling(0);
+}
+```
+
+Note: G_pfnVectors is the vector table implemented on 'startup_stm32.s' file (assembly). 
+
+Lets implement the GPIO_IRQHandling.
+
+```
+void GPIO_IRQHandling(uint8_t GPIO_PinNumber){
+	//Clear the EXTI PR Register corresponding to the pin number
+	if(EXTI->PR & (1 << GPIO_PinNumber)){
+		//clear
+		EXTI->PR |= (1 <<GPIO_PinNumber);
+	}
+}
+```
