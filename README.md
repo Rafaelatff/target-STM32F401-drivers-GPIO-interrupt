@@ -45,10 +45,14 @@ Since we are using SYSCFG and EXTI, we are going to add the base addresses for t
 /*
     Peripheral definitions (Peripheral base addresses typecasted to xxx_RegDef_t)
 */
-#define EXTI	((RCC_RegDef_t*)EXTI_BASEADDR)
-#define SYSCFG	((SYSCFG_RegDef_t*)SYSCFG_BASEADDR) //check if it is done
+#define EXTI		((EXTI_RegDef_t*)EXTI_BASEADDR)
+#define SYSCFG		((SYSCFG_RegDef_t*)SYSCFG_BASEADDR) 
 
-#define GPIO_BASEADDR_TO_CODE(x)       ((x==GPIOA) ? 0:\ //if its A, else B (C conditional operator)
+/*
+    This macro returns a code (between 0 to 5) for given GPIO base address (x)
+*/
+ //if its A, else B (C conditional operator) - this comment in next line bugged my macro
+#define GPIO_BASEADDR_TO_CODE(x)       ((x==GPIOA) ? 0:\ 
 					(x==GPIOB) ? 1:\
 					(x==GPIOC) ? 2:\
 					(x==GPIOD) ? 3:\
@@ -203,4 +207,71 @@ Or, the complete macros:
 #define IRQ_NO_FPU		 			81
 #define IRQ_NO_SPI4		 			84
 ```
+
+Now using the [Cortex -M4 Devices Generic User Guide](https://developer.arm.com/documentation/dui0553/latest/), we are going to complete the GPIO_IRQConfig by the processor specification side.
+
+Note: EXTI is MCU side, NVIC is processor side.
+
+For enabling and disabling those registers, we need to check both registers:
+
+![image](https://user-images.githubusercontent.com/58916022/208692704-f424f4c9-9a72-41a0-83da-f09e49a5e09f.png)
+
+And we also will need to set its priority:
+
+![image](https://user-images.githubusercontent.com/58916022/208693039-55459a79-f655-4759-b930-3c8938cc51b7.png)
+
+Lets create some macros at the top of stm32f401xx.h file:
+```
+/********************* [START] Processor Specific Details ************/
+/*
+ *   ARM Cortex M4 Processor NVIC ISERx register addresses
+ */
+#define NVIC_ISER0		((volatile uint32_t*)0xE000E100)
+#define NVIC_ISER1		((volatile uint32_t*)0xE000E104)
+#define NVIC_ISER2		((volatile uint32_t*)0xE000E108)
+/*
+ *   ARM Cortex M4 Processor NVIC ICERx register addresses
+ */
+#define NVIC_ICER0		((volatile uint32_t*)0xE000E180)
+#define NVIC_ICER1		((volatile uint32_t*)0xE000E184)
+#define NVIC_ICER2		((volatile uint32_t*)0xE000E188)
+/********************* [END] Processor Specific Details ************/
+```
+
+And in stm32f401xx_gpio_driver.c we can complete our functions. But note the we just enable or disable the IRQ number, taking out the Priority (uint8_t IRQPriority) f our already created function (same must happen in .h file).
+We also chaged the name to  GPIO_IRQInterruptConfig and created a new one for priority.
+
+```
+void GPIO_IRQInterruptConfig(uint8_t IRQNumber, uint8_t EnOrDi){
+	if (EnOrDi == ENABLE){
+		if(IRQNumber <= 32){
+			//program ISER0 register
+			*NVIC_ISER0 |= (1 << IRQNumber);
+		}else if (IRQNumber > 31 &&  IRQNumber < 64){ //32 to 63
+			//program ISER1 register
+			*NVIC_ISER1 |= (1 << IRQNumber % 32);
+		}else if (IRQNumber >= 64 &&  IRQNumber < 96){ // 64 to 95 (it ends in 81 for our MCU)
+			//program ISER2 register
+			*NVIC_ISER2 |= (1 << IRQNumber % 64);
+		}
+	}else{
+		if(IRQNumber <= 32){
+			//program ICER0 register
+			*NVIC_ICER0 |= (1 << IRQNumber);
+		}else if (IRQNumber > 31 &&  IRQNumber < 64){
+			//program ICER1 register
+			*NVIC_ICER1 |= (1 << IRQNumber % 32);
+		}else if (IRQNumber >= 64 &&  IRQNumber < 96){
+			//program ICER2 register
+			*NVIC_ICER2 |= (1 << IRQNumber % 64);
+		}
+	}
+}
+
+
+```
+
+For priority, the Interrupt Priority Registers (NVIC_IPR0-NVIC_IPR59) are divided by sections of 8 bits (IRQx_PRI), being 4 IRQ for register. 
+
+
 
