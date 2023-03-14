@@ -17,7 +17,7 @@ GPIO pin interrupt configuration
 adc em xx.h
 
 Since we are using SYSCFG and EXTI, we are going to add the base addresses for the APB2 peripherals (and AHB2 to be completed).
-```
+```c
 /*
     Base addresses of peripherals which are hanging on APB2 bus
 */
@@ -41,7 +41,7 @@ Since we are using SYSCFG and EXTI, we are going to add the base addresses for t
 ```
 
 
-```
+```c
 /*
     Peripheral definitions (Peripheral base addresses typecasted to xxx_RegDef_t)
 */
@@ -91,7 +91,7 @@ void GPIO_IRQConfig()
 
 
 
-```
+```c
 // put this inside, after the if(pGPIOHandle->GPIO_PinConfig.GPIO_PinMode <= GPIO_MODE_ANALOG)
 else{ // >= 4
 	if(pGPIOHandle->GPIO_PinConfig.GPIO_PinMode == GPIO_MODE_IT_FT){
@@ -130,7 +130,7 @@ The information about the position of the IRQ is found in the 'Table 38: Vector 
 
 Copy in the MCU header file:
 
-```
+```c
 #define IRQ_NO_EXTI0 6
 #define IRQ_NO_EXTI1 7
 #define IRQ_NO_EXTI2 8
@@ -142,7 +142,7 @@ Copy in the MCU header file:
 
 Or, the complete macros:
 
-```
+```c
 // Generic IRQ macros 		Table 38. Vector table for STM32F401xB/CSTM32F401xD/E
 #define IRQ_NO_WWDG 				0
 #define IRQ_NO_EXTI16 				1
@@ -221,7 +221,7 @@ And we also will need to set its priority:
 ![image](https://user-images.githubusercontent.com/58916022/208693039-55459a79-f655-4759-b930-3c8938cc51b7.png)
 
 Lets create some macros at the top of stm32f401xx.h file:
-```
+```c
 /********************* [START] Processor Specific Details ************/
 /*
  *   ARM Cortex M4 Processor NVIC ISERx register addresses
@@ -241,7 +241,7 @@ Lets create some macros at the top of stm32f401xx.h file:
 And in stm32f401xx_gpio_driver.c we can complete our functions. But note the we just enable or disable the IRQ number, taking out the Priority (uint8_t IRQPriority) f our already created function (same must happen in .h file).
 We also chaged the name to  GPIO_IRQInterruptConfig and created a new one for priority.
 
-```
+```c
 void GPIO_IRQInterruptConfig(uint8_t IRQNumber, uint8_t EnOrDi){
 	if (EnOrDi == ENABLE){
 		if(IRQNumber <= 32){
@@ -277,7 +277,7 @@ For priority, the Interrupt Priority Registers (NVIC_IPR0-NVIC_IPR59) are divide
 
 ![image](https://user-images.githubusercontent.com/58916022/208701122-dd1b9b66-2f47-4e88-a7c2-65b836a005eb.png)
 
-```
+```c
 void GPIO_IRQPriorityConfig(uint8_t IRQNumber, uint8_t IRQPriority){
 	//1. first lets find out the IPR register
 	uint8_t iprx = IRQNumber /4;
@@ -292,7 +292,7 @@ void GPIO_IRQPriorityConfig(uint8_t IRQNumber, uint8_t IRQPriority){
 ```
 Lets also add in  Processor Specific Details:
 
-```
+```c
 /*
  *   ARM Cortex M4 Processor number of Priority bits implemented in Priority register 
  */
@@ -306,7 +306,7 @@ ISR - user defined
 
 Just seachr for the ISR that you need (eg.: EXTI0_IRQHandler) and copy to the main.c.
 
-```
+```c
 void EXTI0_IRQHandler(void){
 	// Handle the interrupt
 	//now the drivers enters:
@@ -321,7 +321,7 @@ Note: G_pfnVectors is the vector table implemented on 'startup_stm32.s' file (as
 
 Lets implement the GPIO_IRQHandling.
 
-```
+```c
 void GPIO_IRQHandling(uint8_t GPIO_PinNumber){
 	//Clear the EXTI PR Register corresponding to the pin number
 	if(EXTI->PR & (1 << GPIO_PinNumber)){
